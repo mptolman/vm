@@ -2,8 +2,6 @@ module mem;
 
 import std.c.stdlib;
 import std.conv;
-import std.stdio;
-import std.typecons;
 
 struct Memory
 {

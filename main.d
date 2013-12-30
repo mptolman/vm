@@ -1,8 +1,6 @@
 import assembler;
 import mem;
 import vm;
-import std.algorithm;
-import std.array;
 import std.file;
 import std.stdio;
 

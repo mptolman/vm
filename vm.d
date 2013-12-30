@@ -6,8 +6,8 @@ import std.stdio;
 import std.c.stdio;
 
 immutable MEM_SIZE_IN_BYTES = 1024*1024*5; // 5 MB
-immutable THREAD_STACK_SIZE = 1024*100; // 100 KB per thread
-immutable THREAD_COUNT 		= 5; // # threads
+immutable THREAD_STACK_SIZE = 1024*200; // 200 KB per thread
+immutable THREAD_COUNT 		= 6; // # threads (including main)
 immutable OPS_PER_THREAD 	= 3; // # instructions b/w context switch
 
 alias int[Register.COUNT] Regs;
@@ -87,7 +87,7 @@ void execute(ref Memory mem, int start)
 			reg[instr.opd1] = reg[instr.opd1] / reg[instr.opd2];
 			break;
 		case Opcode.END:
-			if (currThread.tid > 0) {
+			if (currThread.tid) {
 				threadPool.push(currThread);
 				currThread = activeThreads.front();
 				activeThreads.pop();
@@ -188,8 +188,6 @@ void execute(ref Memory mem, int start)
 		default:
 			break;	
 		}
-
-		//writeln(reg);
 	}
 }
 
@@ -213,6 +211,6 @@ Queue!ThreadStack activeThreads;
 
 static this()
 {
-	threadPool = new Queue!ThreadStack;
+	threadPool	  = new Queue!ThreadStack;
 	activeThreads = new Queue!ThreadStack;
 }
