@@ -31,6 +31,6 @@ class Queue(T)
 
 	void clear()
 	{
-		data = data[0..0];
+		data = null;
 	}
 }

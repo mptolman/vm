@@ -1,32 +1,53 @@
 import instr;
 import mem;
 import queue;
-
 import std.conv;
 import std.stdio;
 import std.c.stdio;
 
-immutable OPS_PER_THREAD = 3;
-alias int[Register.COUNT] Registers;
+immutable MEM_SIZE_IN_BYTES = 1024*1024*5; // 5 MB
+immutable THREAD_STACK_SIZE = 1024*100; // 100 KB per thread
+immutable THREAD_COUNT 		= 5; // # threads
+immutable OPS_PER_THREAD 	= 3; // # instructions b/w context switch
+
+alias int[Register.COUNT] Regs;
 
 void execute(ref Memory mem, int start)
 {
 	if (start < 0)
 		return;
 
-	reg[Register.SB] = mem.size - 1;
-	reg[Register.SP] = reg[Register.FP] = mem.size - int.sizeof;
-	reg[Register.SL] = mem.nextFree;
+	threadPool.clear();
+	activeThreads.clear();
+
+	foreach (i; 0..THREAD_COUNT)
+		threadPool.push(ThreadStack(i));
+
+	auto currThread = threadPool.front();
+	threadPool.pop();
+	auto reg = currThread.reg;
 	reg[Register.PC] = start;
 
+	size_t threadOpCount = 0;
 	bool running = true;
-	Instruction* instr;
 
 	while (running) {
-		instr = mem.load!Instruction(reg[Register.PC]);
+		if (activeThreads.size) {
+			if (threadOpCount >= OPS_PER_THREAD) {
+				currThread.reg = reg;
+				activeThreads.push(currThread);
+				currThread = activeThreads.front();
+				activeThreads.pop();
+				reg = currThread.reg;
+				threadOpCount = 0;
+			}
+			++threadOpCount;
+		}
+
+		Instruction* instr = mem.load!Instruction(reg[Register.PC]);
 		reg[Register.PC] += Instruction.sizeof;
 
-		//writefln("%s %s %s %s",instr.opcode,instr.opd1,instr.opd2,instr.addrMode);
+		//writefln("%s: %s %s %s %s",currThread.tid,instr.opcode,instr.opd1,instr.opd2,instr.addrMode);
 
 		switch (instr.opcode) {
 		case Opcode.ADD:
@@ -40,7 +61,8 @@ void execute(ref Memory mem, int start)
 				reg[Register.PC] = instr.opd2;
 			break;
 		case Opcode.BLK:
-
+			if (currThread.tid == 0 && activeThreads.size)
+				reg[Register.PC] -= Instruction.sizeof;
 			break;
 		case Opcode.BLT:
 			if (reg[instr.opd1] < 0)
@@ -65,6 +87,13 @@ void execute(ref Memory mem, int start)
 			reg[instr.opd1] = reg[instr.opd1] / reg[instr.opd2];
 			break;
 		case Opcode.END:
+			if (currThread.tid > 0) {
+				threadPool.push(currThread);
+				currThread = activeThreads.front();
+				activeThreads.pop();
+				reg = currThread.reg;
+				threadOpCount = 0;
+			}
 			break;
 		case Opcode.JMP:
 			reg[Register.PC] = instr.opd1;
@@ -74,7 +103,11 @@ void execute(ref Memory mem, int start)
 			break;
 		case Opcode.LCK:
 			{
-
+				auto tid = mem.load!int(instr.opd1);
+				if (*tid < 0)
+					*tid = currThread.tid;
+				else
+					reg[Register.PC] -= Instruction.sizeof;
 				break;
 			}
 		case Opcode.LDA:
@@ -100,6 +133,13 @@ void execute(ref Memory mem, int start)
 			break;
 		case Opcode.RUN:
 			{
+				auto newThread = threadPool.front();
+				threadPool.pop();
+				newThread.reg[Register.PC] = instr.opd2;
+				newThread.reg[instr.opd1]  = newThread.tid;
+				activeThreads.push(newThread);
+
+				reg[instr.opd1] = newThread.tid;
 				break;
 			}
 		case Opcode.STB:
@@ -137,6 +177,14 @@ void execute(ref Memory mem, int start)
 			default:
 				break;
 			}
+			break;
+		case Opcode.ULK:
+			{
+				auto tid = mem.load!int(instr.opd1);
+				if (*tid == currThread.tid)
+					*tid = -1;
+				break;
+			}
 		default:
 			break;	
 		}
@@ -147,5 +195,24 @@ void execute(ref Memory mem, int start)
 
 
 private:
+struct ThreadStack
+{
+	size_t tid;
+	Regs reg;
 
-int[Register.COUNT] reg;
+	this(size_t tid) {
+		this.tid = tid;
+		reg[Register.SB] = MEM_SIZE_IN_BYTES - (tid * THREAD_STACK_SIZE) - 1;
+		reg[Register.SL] = reg[Register.SB] - THREAD_STACK_SIZE + 1;
+		reg[Register.SP] = reg[Register.FP] = reg[Register.SB];
+	}
+}
+
+Queue!ThreadStack threadPool;
+Queue!ThreadStack activeThreads;
+
+static this()
+{
+	threadPool = new Queue!ThreadStack;
+	activeThreads = new Queue!ThreadStack;
+}
