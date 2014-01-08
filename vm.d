@@ -1,14 +1,13 @@
 import instr;
 import mem;
 import queue;
+import std.conv : text;
 import std.stdio;
 
 immutable MEM_SIZE_IN_BYTES = 1024*1024*5; // 5 MB
 immutable THREAD_STACK_SIZE = 1024*300; // 300 KB per thread
 immutable THREAD_COUNT      = 6; // # threads (including main)
 immutable OPS_PER_THREAD    = 3; // # instructions b/w context switch
-
-alias int[Register.COUNT] Regs;
 
 void execute(ref Memory mem, int start)
 {
@@ -20,7 +19,7 @@ void execute(ref Memory mem, int start)
 
     // Start main thread
     auto currThread = allocateThread(start);
-    auto reg = currThread.reg;
+    auto reg = currThread.reg.ptr;
 
     bool running = true;
     size_t threadOpCount = 0;
@@ -28,8 +27,10 @@ void execute(ref Memory mem, int start)
     while (running) {
         if (!activeThreads.empty) {
             if (threadOpCount >= OPS_PER_THREAD) {
-                storeThread(currThread, reg);
-                currThread = restoreThread(reg);
+                activeThreads.push(currThread);                
+                currThread = activeThreads.front();
+                activeThreads.pop();
+                reg = currThread.reg.ptr;
                 threadOpCount = 0;
             }
             ++threadOpCount;
@@ -69,8 +70,8 @@ void execute(ref Memory mem, int start)
             break;
         case Opcode.CMP:
             {
-                int* rd = &reg[instr.opd1];
-                int* rs = &reg[instr.opd2];
+                auto rd = &reg[instr.opd1];
+                auto rs = &reg[instr.opd2];
                 *rd = *rd < *rs ? -1 : (*rd > *rs ? 1 : 0);
                 break;
             }
@@ -80,7 +81,9 @@ void execute(ref Memory mem, int start)
         case Opcode.END:
             if (currThread.tid) { // only non-main threads can END
                 threadPool.push(currThread);
-                currThread = restoreThread(reg);
+                currThread = activeThreads.front();
+                activeThreads.pop();
+                reg = currThread.reg.ptr;
                 threadOpCount = 0;
             }
             break;
@@ -125,6 +128,7 @@ void execute(ref Memory mem, int start)
                 auto newThread = allocateThread(instr.opd2);
                 newThread.reg[instr.opd1] = newThread.tid;
                 activeThreads.push(newThread);
+
                 reg[instr.opd1] = newThread.tid;
                 break;
             }
@@ -172,17 +176,19 @@ void execute(ref Memory mem, int start)
                 break;
             }
         default:
-            break;  
+            throw new Exception(text("Unimplemented opcode: ",instr.opcode));
         }
     }
 }
 
-
+/***************************
+  Private data
+***************************/
 private:
 struct ThreadStack
 {
     size_t tid;
-    Regs reg;
+    int[Register.COUNT] reg;
 
     this(size_t tid) {
         this.tid = tid;
@@ -212,20 +218,6 @@ auto allocateThread(int start)
     threadPool.pop();
     ts.reg[Register.PC] = start;
 
-    return ts;
-}
-
-void storeThread(ref ThreadStack ts, const ref Regs reg)
-{
-    ts.reg = reg;
-    activeThreads.push(ts);
-}
-
-auto restoreThread(ref Regs reg)
-{
-    auto ts = activeThreads.front();
-    activeThreads.pop();
-    reg = ts.reg;
     return ts;
 }
 

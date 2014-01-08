@@ -1,7 +1,9 @@
 class Queue(T)
 {
-	private T[] data;
+private:
+	T[] data;
 
+public:
 	auto front()
 	{
 		assert(data.length);

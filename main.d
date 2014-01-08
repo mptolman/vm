@@ -10,10 +10,10 @@ int main(string[] args)
 		return 1;
 	}
 
-	File file = File(args[1]);
-	Memory mem = Memory(MEM_SIZE_IN_BYTES);
-
 	try {
+		File file = File(args[1]);
+		Memory mem = Memory(vm.MEM_SIZE_IN_BYTES);
+
 		auto start = assemble(file, mem);
 		execute(mem, start);
 	}

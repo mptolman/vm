@@ -86,9 +86,8 @@ int assemble(File file, ref Memory mem)
 				case Opcode.LDA:
 					if (!getRegister(tok.opd1, instr.opd1))
 						throw new AssemblerException(lineNum,"Unrecognized register: ",tok.opd1);
-					if (!getLabelAddr(tok.opd2, instr.opd2)) {
+					if (!getLabelAddr(tok.opd2, instr.opd2))
 						throw new AssemblerException(lineNum,"Reference to undefined label: ",tok.opd2);
-					}
 					break;
 				case Opcode.LDB:
 				case Opcode.LDR:
@@ -146,8 +145,8 @@ class AssemblerException : Exception
 }
 
 /**************************
-/* Private data
-/*************************/
+  Private data
+**************************/
 private:
 immutable Opcode[string] opcodeMap;
 immutable Register[string] regMap;
