@@ -4,42 +4,42 @@ import std.conv;
 struct Memory
 {
 private:
-	byte* _mem;
-	size_t _memSize;
-	size_t _nextFree;
+    byte* _mem;
+    size_t _memSize;
+    size_t _nextFree;
 
 public:
-	this(size_t memSize)
-	{
-		_mem = cast(byte*)std.c.stdlib.malloc(memSize);
-		_memSize = memSize;
-	}
+    this(size_t memSize)
+    {
+        _mem = cast(byte*)std.c.stdlib.malloc(memSize);
+        _memSize = memSize;
+    }
 
-	auto alloc(T,Args...)(Args args)
-	{
-		auto p = store!T(_nextFree, args);
-		_nextFree += T.sizeof;
-		return p;
-	}
+    auto alloc(T,Args...)(Args args)
+    {
+        auto p = store!T(_nextFree, args);
+        _nextFree += T.sizeof;
+        return p;
+    }
 
-	auto store(T,Args...)(size_t offset, Args args)
-	{
-		assert(offset < _memSize);
-		return emplace!T(cast(T*)(_mem+offset), args);
-	}
+    auto store(T,Args...)(size_t offset, Args args)
+    {
+        assert(offset < _memSize);
+        return emplace!T(cast(T*)(_mem+offset), args);
+    }
 
-	auto load(T)(size_t offset) const
-	{
-		assert(offset < _memSize);
-		return cast(T*)(_mem+offset);
-	}
+    auto load(T)(size_t offset) const
+    {
+        assert(offset < _memSize);
+        return cast(T*)(_mem+offset);
+    }
 
-	auto size() const { return _memSize; }
+    auto size() const { return _memSize; }
 
-	auto nextFree() const { return _nextFree; }
+    auto nextFree() const { return _nextFree; }
 
-	~this()
-	{
-		std.c.stdlib.free(cast(void*)_mem);
-	}
+    ~this()
+    {
+        std.c.stdlib.free(cast(void*)_mem);
+    }
 }

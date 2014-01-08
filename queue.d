@@ -1,38 +1,38 @@
 class Queue(T)
 {
 private:
-	T[] data;
+    T[] data;
 
 public:
-	auto front()
-	{
-		assert(data.length);
-		return data[0];
-	}
+    auto front()
+    {
+        assert(data.length);
+        return data[0];
+    }
 
-	void push(T t)
-	{
-		data ~= t;
-	}
+    void push(T t)
+    {
+        data ~= t;
+    }
 
-	void pop()
-	{
-		assert(data.length);
-		data = data[1..$];		
-	}
+    void pop()
+    {
+        assert(data.length);
+        data = data[1..$];      
+    }
 
-	auto empty()
-	{
-		return data.length == 0;
-	}
+    auto empty()
+    {
+        return data.length == 0;
+    }
 
-	auto size()
-	{
-		return data.length;
-	}
+    auto size()
+    {
+        return data.length;
+    }
 
-	void clear()
-	{
-		data = null;
-	}
+    void clear()
+    {
+        data = null;
+    }
 }
