@@ -1,7 +1,6 @@
 import assembler;
 import mem;
 import vm;
-import std.file;
 import std.stdio;
 
 int main(string[] args)
@@ -17,8 +16,9 @@ int main(string[] args)
 	try {
 		auto start = assemble(file, mem);
 		execute(mem, start);
-	} catch (AssemblerException e) {
-		writeln("Error during assembly. ",e);
+	}
+	catch (Exception e) {
+		writeln(e.msg);
 	}
 
 	return 0;

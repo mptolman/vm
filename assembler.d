@@ -21,7 +21,7 @@ int assemble(File file, ref Memory mem)
 
 			auto tok = tokenize(to!string(line));
 			if (!tok)
-				throw new AssemblerException(lineNum,"Invalid syntax. ",line);
+				throw new AssemblerException(lineNum,"Invalid syntax: ",line);
 
 			if (firstPass) {
 				if (tok.label.length) {
@@ -43,6 +43,7 @@ int assemble(File file, ref Memory mem)
 				continue;
 			}
 
+			// Second pass
 			if (tok.opcode == ".BYT") {
 				foreach(c; replaceSpecialChars(tok.opd1))
 					mem.alloc!char(c);
@@ -141,17 +142,19 @@ int assemble(File file, ref Memory mem)
 
 class AssemblerException : Exception
 {
-	this(Args...)(size_t line, Args args) { super(text("Line ",line,". ",args)); }
+	this(Args...)(size_t line, Args args) { super(text("(",line,") ",args)); }
 }
 
-// Private data
+/**************************
+/* Private data
+/*************************/
 private:
 immutable Opcode[string] opcodeMap;
 immutable Register[string] regMap;
 immutable InstrRegex[] regexps;
 size_t[string] labelMap;
 
-auto truncate(T)(T buf, char delim)
+auto truncate(T,U)(T buf, U delim)
 {
 	auto pos = buf.indexOf(delim);
 	return pos >= 0 ? buf[0..pos] : buf;
