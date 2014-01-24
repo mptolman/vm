@@ -1,9 +1,8 @@
-import instr;
-import mem;
 import std.conv;
 import std.regex;
 import std.stdio;
 import std.string;
+import instr, mem;
 
 int assemble(File file, ref Memory mem)
 {
@@ -16,8 +15,8 @@ int assemble(File file, ref Memory mem)
         size_t memOffset;
 
         for(size_t lineNum=1; file.readln(buf); ++lineNum) {
-            auto line = strip(truncate(buf, ';'));
-            if (!line.length) continue;
+            auto line = strip(truncate(buf, ';')); // strip comments
+            if (!line.length) continue; // ignore empty lines
 
             auto tok = tokenize(to!string(line));
             if (!tok)

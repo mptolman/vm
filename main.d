@@ -1,7 +1,5 @@
-import assembler;
-import mem;
-import vm;
 import std.stdio;
+import assembler, mem, vm;
 
 int main(string[] args)
 {

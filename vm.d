@@ -1,8 +1,6 @@
-import instr;
-import mem;
-import queue;
-import std.conv : text;
+import std.conv;
 import std.stdio;
+import instr, mem, queue;
 
 immutable MEM_SIZE_IN_BYTES = 1024*1024*5; // 5 MB
 immutable THREAD_STACK_SIZE = 1024*300; // 300 KB per thread
@@ -25,11 +23,12 @@ void execute(ref Memory mem, int start)
     size_t threadOpCount = 0;
 
     while (running) {
-        if (!activeThreads.empty) {
+        if (!_activeThreads.empty) {
             if (threadOpCount >= OPS_PER_THREAD) {
-                activeThreads.push(currThread);                
-                currThread = activeThreads.front();
-                activeThreads.pop();
+                // context switch
+                _activeThreads.push(currThread);                
+                currThread = _activeThreads.front();
+                _activeThreads.pop();
                 reg = currThread.reg.ptr;
                 threadOpCount = 0;
             }
@@ -53,7 +52,7 @@ void execute(ref Memory mem, int start)
                 reg[Register.PC] = instr.opd2;
             break;
         case Opcode.BLK:
-            if (currThread.tid == 0 && !activeThreads.empty) // only main thread can BLK
+            if (currThread.tid == 0 && !_activeThreads.empty) // only main thread can BLK
                 reg[Register.PC] -= Instruction.sizeof;
             break;
         case Opcode.BLT:
@@ -80,9 +79,9 @@ void execute(ref Memory mem, int start)
             break;
         case Opcode.END:
             if (currThread.tid) { // only non-main threads can END
-                threadPool.push(currThread);
-                currThread = activeThreads.front();
-                activeThreads.pop();
+                _threadPool.push(currThread);
+                currThread = _activeThreads.front();
+                _activeThreads.pop();
                 reg = currThread.reg.ptr;
                 threadOpCount = 0;
             }
@@ -127,7 +126,7 @@ void execute(ref Memory mem, int start)
             {
                 auto newThread = allocateThread(instr.opd2);
                 newThread.reg[instr.opd1] = newThread.tid;
-                activeThreads.push(newThread);
+                _activeThreads.push(newThread);
 
                 reg[instr.opd1] = newThread.tid;
                 break;
@@ -185,6 +184,9 @@ void execute(ref Memory mem, int start)
   Private data
 ***************************/
 private:
+Queue!ThreadStack _threadPool;
+Queue!ThreadStack _activeThreads;
+
 struct ThreadStack
 {
     size_t tid;
@@ -198,24 +200,21 @@ struct ThreadStack
     }
 }
 
-Queue!ThreadStack threadPool;
-Queue!ThreadStack activeThreads;
-
 void threadInit()
 {
-    threadPool.clear();
-    activeThreads.clear();
+    _threadPool.clear();
+    _activeThreads.clear();
     foreach (i; 0..THREAD_COUNT)
-        threadPool.push(ThreadStack(i));
+        _threadPool.push(ThreadStack(i));
 }
 
 auto allocateThread(int start)
 {
-    if (threadPool.empty)
+    if (_threadPool.empty)
         throw new Exception("Exceeded thread limit!");
 
-    auto ts = threadPool.front();
-    threadPool.pop();
+    auto ts = _threadPool.front();
+    _threadPool.pop();
     ts.reg[Register.PC] = start;
 
     return ts;
@@ -223,6 +222,6 @@ auto allocateThread(int start)
 
 static this()
 {
-    threadPool    = new Queue!ThreadStack;
-    activeThreads = new Queue!ThreadStack;
+    _threadPool    = new Queue!ThreadStack;
+    _activeThreads = new Queue!ThreadStack;
 }
