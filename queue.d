@@ -21,12 +21,12 @@ public:
         data = data[1..$];      
     }
 
-    auto empty()
+    auto empty() const
     {
         return data.length == 0;
     }
 
-    auto size()
+    auto size() const
     {
         return data.length;
     }

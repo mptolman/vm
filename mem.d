@@ -15,6 +15,11 @@ public:
         _memSize = memSize;
     }
 
+    ~this()
+    {
+        std.c.stdlib.free(cast(void*)_mem);
+    }
+
     auto alloc(T,Args...)(Args args)
     {
         auto p = store!T(_nextFree, args);
@@ -34,12 +39,13 @@ public:
         return cast(T*)(_mem+offset);
     }
 
-    auto size() const { return _memSize; }
+    auto size() const 
+    { 
+        return _memSize; 
+    }
 
-    auto nextFree() const { return _nextFree; }
-
-    ~this()
-    {
-        std.c.stdlib.free(cast(void*)_mem);
+    auto nextFree() const 
+    { 
+        return _nextFree; 
     }
 }

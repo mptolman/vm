@@ -7,7 +7,7 @@ import instr, mem;
 int assemble(File file, ref Memory mem)
 {
     int start = -1;
-    labelMap.clear();
+    _labelMap.clear();
 
     void continueAssemble(bool firstPass)
     {
@@ -24,8 +24,8 @@ int assemble(File file, ref Memory mem)
 
             if (firstPass) {
                 if (tok.label.length) {
-                    if (tok.label !in labelMap)
-                        labelMap[tok.label] = memOffset;
+                    if (tok.label !in _labelMap)
+                        _labelMap[tok.label] = memOffset;
                     else
                         throw new AssemblerException(lineNum,"Duplicate label definition: ",tok.label);
                 }
@@ -52,11 +52,11 @@ int assemble(File file, ref Memory mem)
                     mem.alloc!int(to!int(strip(s)));
             }
             else {
-                if (tok.opcode !in opcodeMap)
+                if (tok.opcode !in _opcodeMap)
                     throw new AssemblerException(lineNum,"No mapping for opcode ",tok.opcode);
 
                 auto instr = mem.alloc!Instruction();
-                instr.opcode = opcodeMap[tok.opcode];
+                instr.opcode = _opcodeMap[tok.opcode];
                 instr.addrMode = tok.addrMode;
 
                 final switch (instr.opcode) {
@@ -147,10 +147,10 @@ class AssemblerException : Exception
   Private data
 **************************/
 private:
-immutable Opcode[string] opcodeMap;
-immutable Register[string] regMap;
-immutable InstrRegex[] regexps;
-size_t[string] labelMap;
+immutable Opcode[string] _opcodeMap;
+immutable Register[string] _regMap;
+immutable InstrRegex[] _regexps;
+size_t[string] _labelMap;
 
 auto truncate(T,U)(T buf, U delim)
 {
@@ -198,7 +198,7 @@ auto tokenize(string s)
 {
     string label, opcode, opd1, opd2;
 
-    foreach(r; regexps) {
+    foreach(r; _regexps) {
         auto m = match(s, r.regex);
         if (m.empty) continue;
         for (size_t i = 1; i < m.captures.length; ++i) {
@@ -225,31 +225,31 @@ auto tokenize(string s)
 
 auto getLabelAddr(string label, ref int offset)
 {
-    if (label !in labelMap)
+    if (label !in _labelMap)
         return false;
-    offset = labelMap[label];
+    offset = _labelMap[label];
     return true;
 }
 
 auto getOpcode(string s, ref int opcode)
 {
-    if (s !in opcodeMap)
+    if (s !in _opcodeMap)
         return false;
-    opcode = opcodeMap[s];
+    opcode = _opcodeMap[s];
     return true;
 }
 
 auto getRegister(string s, ref int reg)
 {
-    if (s !in regMap)
+    if (s !in _regMap)
         return false;
-    reg = regMap[s];
+    reg = _regMap[s];
     return true;
 }
 
 static this()
 {
-    opcodeMap = [
+    _opcodeMap = [
         "ADD" : Opcode.ADD,
         "ADI" : Opcode.ADI,
         "AND" : Opcode.AND,
@@ -278,7 +278,7 @@ static this()
         "ULK" : Opcode.ULK
     ];
 
-    regMap = [
+    _regMap = [
         "R0" : Register.R0,
         "R1" : Register.R1,
         "R2" : Register.R2,
@@ -296,7 +296,7 @@ static this()
         "FP" : Register.FP
     ];
 
-    regexps = [
+    _regexps = [
         InstrRegex(r"^\s*(?:(\w+)\s+)?(ADD|AND|CMP|DIV|MOV|MUL|OR|SUB)\s+(R\d|FP|SP)\s*,\s*(R\d|SP|SL|PC|FP|SB)\s*$",AddressMode.REGISTER),
         InstrRegex(r"^\s*(?:(\w+)\s+)?(BGT|BLT|BNZ|BRZ|LDA|LDB|LDR|RUN|STB|STR)\s+(R\d)\s*,\s*(\w+)\s*$",AddressMode.DIRECT),
         InstrRegex(r"^\s*(?:(\w+)\s+)?(LDB|LDR|STB|STR)\s+(R\d|FP)\s*,\s*\((R\d|SP|FP)\)\s*$",AddressMode.INDIRECT),
