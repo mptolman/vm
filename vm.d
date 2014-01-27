@@ -95,7 +95,9 @@ void execute(Memory mem, int start)
         case Opcode.LCK:
             {
                 auto tid = mem.load!int(instr.opd1);
-                if (*tid < 0)
+                if (*tid == currThread.tid) {}
+                    // nothing to do; this thread already has a lock
+                else if (*tid < 0)
                     *tid = currThread.tid;
                 else
                     reg[Register.PC] -= Instruction.sizeof;
