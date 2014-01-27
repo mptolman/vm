@@ -1,7 +1,7 @@
 import std.c.stdlib;
 import std.conv;
 
-struct Memory
+class Memory
 {
 private:
     byte* _mem;

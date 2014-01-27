@@ -4,7 +4,7 @@ import std.stdio;
 import std.string;
 import instr, mem;
 
-int assemble(File file, ref Memory mem)
+int assemble(File file, Memory mem)
 {
     int start = -1;
     _labelMap.clear();

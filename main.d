@@ -10,7 +10,7 @@ int main(string[] args)
 
     try {
         File file = File(args[1]);
-        Memory mem = Memory(vm.MEM_SIZE_IN_BYTES);
+        Memory mem = new Memory(vm.MEM_SIZE_IN_BYTES);
 
         auto start = assemble(file, mem);
         execute(mem, start);

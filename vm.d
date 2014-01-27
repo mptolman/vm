@@ -7,7 +7,7 @@ immutable THREAD_STACK_SIZE = 1024*300; // 300 KB per thread
 immutable THREAD_COUNT      = 6; // # threads (including main)
 immutable OPS_PER_THREAD    = 3; // # instructions b/w context switch
 
-void execute(ref Memory mem, int start)
+void execute(Memory mem, int start)
 {
     if (start < 0)
         return;
