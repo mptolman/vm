@@ -47,6 +47,9 @@ void execute(Memory mem, int start)
         case Opcode.ADI:
             reg[instr.opd1] = reg[instr.opd1] + instr.opd2;
             break;
+        case Opcode.AND:
+            reg[instr.opd1] = reg[instr.opd1] && reg[instr.opd2];
+            break;
         case Opcode.BGT:
             if (reg[instr.opd1] > 0)
                 reg[Register.PC] = instr.opd2;
@@ -123,6 +126,9 @@ void execute(Memory mem, int start)
             break;
         case Opcode.MUL:
             reg[instr.opd1] = reg[instr.opd1] * reg[instr.opd2];
+            break;
+        case Opcode.OR:
+            reg[instr.opd1] = reg[instr.opd1] || reg[instr.opd2];
             break;
         case Opcode.RUN:
             {
