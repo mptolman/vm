@@ -117,7 +117,7 @@ int assemble(File file, Memory mem)
                 case Opcode.TRP:
                     {
                         auto trap = to!int(tok.opd1);
-                        if (trap < 0 || trap > 4)
+                        if (trap < 0 || (trap > 4 && trap != 10 && trap != 11))
                             throw new AssemblerException(lineNum,"Invalid TRP ",tok.opd1);
                         instr.opd1 = trap;
                         break;
@@ -301,7 +301,7 @@ static this()
         InstrRegex(r"^\s*(?:(\w+)\s+)?(BGT|BLT|BNZ|BRZ|LDA|LDB|LDR|RUN|STB|STR)\s+(R\d)\s*,\s*(\w+)\s*$",AddressMode.DIRECT),
         InstrRegex(r"^\s*(?:(\w+)\s+)?(LDB|LDR|STB|STR)\s+(R\d|FP)\s*,\s*\((R\d|SP|FP)\)\s*$",AddressMode.INDIRECT),
         InstrRegex(r"^\s*(?:(\w+)\s+)?(ADI)\s+(R\d|SP)\s*,\s*(-?\d+)\s*$",AddressMode.IMMEDIATE),
-        InstrRegex(r"^\s*(?:(\w+)\s+)?(TRP)\s+(\d)\s*$",AddressMode.IMMEDIATE),
+        InstrRegex(r"^\s*(?:(\w+)\s+)?(TRP)\s+(\d+)\s*$",AddressMode.IMMEDIATE),
         InstrRegex(r"^\s*(?:(\w+)\s+)?(\.INT)\s+(-?\d+(?:\s*,\s*-?\d+)*)\s*$",AddressMode.IMMEDIATE),
         InstrRegex(r"^\s*(?:(\w+)\s+)?(\.BYT)\s+'(.+)'\s*$",AddressMode.IMMEDIATE),
         InstrRegex(r"^\s*(?:(\w+)\s+)?(JMP|LCK|ULK)\s+(\w+)\s*$",AddressMode.IMMEDIATE),

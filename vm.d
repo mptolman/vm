@@ -170,9 +170,23 @@ void execute(Memory mem, int start)
                 break;
             case 4:
                 reg[Register.R0] = getchar();
-                break;  
-            default:
                 break;
+            case 10:
+                try {
+                    reg[Register.R0] = to!int(to!string(cast(char)reg[Register.R0]));
+                }
+                catch (Exception) {
+                    reg[Register.R0] = -1;
+                }
+                break;
+            case 11:
+                if (reg[Register.R0] >= 0 && reg[Register.R0] <= 9)
+                    reg[Register.R0] = to!string(reg[Register.R0])[0];
+                else
+                    reg[Register.R0] = -1;
+                break;
+            default:
+                throw new Exception(text("Unimplemented TRP ",instr.opd1));
             }
             break;
         case Opcode.ULK:
