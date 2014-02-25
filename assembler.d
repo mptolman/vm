@@ -279,33 +279,39 @@ static this()
     ];
 
     _regMap = [
-        "R0" : Register.R0,
-        "R1" : Register.R1,
-        "R2" : Register.R2,
-        "R3" : Register.R3,
-        "R4" : Register.R4,
-        "R5" : Register.R5,
-        "R6" : Register.R6,
-        "R7" : Register.R7,
-        "R8" : Register.R8,
-        "R9" : Register.R9,
-        "PC" : Register.PC,
-        "SB" : Register.SB,
-        "SL" : Register.SL,
-        "SP" : Register.SP,
-        "FP" : Register.FP
+        "R0"  : Register.R0,
+        "R1"  : Register.R1,
+        "R2"  : Register.R2,
+        "R3"  : Register.R3,
+        "R4"  : Register.R4,
+        "R5"  : Register.R5,
+        "R6"  : Register.R6,
+        "R7"  : Register.R7,
+        "R8"  : Register.R8,
+        "R9"  : Register.R9,
+        "R10" : Register.R10,
+        "R11" : Register.R11,
+        "R12" : Register.R12,
+        "R13" : Register.R13,
+        "R14" : Register.R14,
+        "R15" : Register.R15,
+        "PC"  : Register.PC,
+        "SB"  : Register.SB,
+        "SL"  : Register.SL,
+        "SP"  : Register.SP,
+        "FP"  : Register.FP
     ];
 
     _regexps = [
-        InstrRegex(r"^\s*(?:(\w+)\s+)?(ADD|AND|CMP|DIV|MOV|MUL|OR|SUB)\s+(R\d|FP|SP)\s*,?\s*(R\d|SP|SL|PC|FP|SB)\s*$",AddressMode.REGISTER),
-        InstrRegex(r"^\s*(?:(\w+)\s+)?(BGT|BLT|BNZ|BRZ|LDA|LDB|LDR|RUN|STB|STR)\s+(R\d)\s*,?\s*(\w+)\s*$",AddressMode.DIRECT),
-        InstrRegex(r"^\s*(?:(\w+)\s+)?(LDB|LDR|STB|STR)\s+(R\d|FP)\s*,?\s*\((R\d|SP|FP)\)\s*$",AddressMode.INDIRECT),
-        InstrRegex(r"^\s*(?:(\w+)\s+)?(ADI)\s+(R\d|SP)\s*,?\s*(-?\d+)\s*$",AddressMode.IMMEDIATE),
+        InstrRegex(r"^\s*(?:(\w+)\s+)?(ADD|AND|CMP|DIV|MOV|MUL|OR|SUB)\s+(R\d+|FP|SP)\s*,?\s*(R\d+|SP|SL|PC|FP|SB)\s*$",AddressMode.REGISTER),
+        InstrRegex(r"^\s*(?:(\w+)\s+)?(BGT|BLT|BNZ|BRZ|LDA|LDB|LDR|RUN|STB|STR)\s+(R\d+)\s*,?\s*(\w+)\s*$",AddressMode.DIRECT),
+        InstrRegex(r"^\s*(?:(\w+)\s+)?(LDB|LDR|STB|STR)\s+(R\d+|FP)\s*,?\s*\((R\d+|SP|FP)\)\s*$",AddressMode.INDIRECT),
+        InstrRegex(r"^\s*(?:(\w+)\s+)?(ADI)\s+(R\d+|SP)\s*,?\s*(-?\d+)\s*$",AddressMode.IMMEDIATE),
         InstrRegex(r"^\s*(?:(\w+)\s+)?(TRP)\s+(\d+)\s*$",AddressMode.IMMEDIATE),
         InstrRegex(r"^\s*(?:(\w+)\s+)?(\.INT)\s+(-?\d+(?:\s*,\s*-?\d+)*)\s*$",AddressMode.IMMEDIATE),
         InstrRegex(r"^\s*(?:(\w+)\s+)?(\.BYT)\s+'(.+)'\s*$",AddressMode.IMMEDIATE),
         InstrRegex(r"^\s*(?:(\w+)\s+)?(JMP|LCK|ULK)\s+(\w+)\s*$",AddressMode.IMMEDIATE),
-        InstrRegex(r"^\s*(?:(\w+)\s+)?(JMR)\s+(R\d)\s*$",AddressMode.REGISTER),
+        InstrRegex(r"^\s*(?:(\w+)\s+)?(JMR)\s+(R\d+)\s*$",AddressMode.REGISTER),
         InstrRegex(r"^\s*(?:(\w+)\s+)?(BLK|END)\s*$",AddressMode.IMMEDIATE)
     ];
 }
