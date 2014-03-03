@@ -289,29 +289,24 @@ static this()
         "R7"  : Register.R7,
         "R8"  : Register.R8,
         "R9"  : Register.R9,
-        "R10" : Register.R10,
-        "R11" : Register.R11,
-        "R12" : Register.R12,
-        "R13" : Register.R13,
-        "R14" : Register.R14,
-        "R15" : Register.R15,
         "PC"  : Register.PC,
         "SB"  : Register.SB,
         "SL"  : Register.SL,
         "SP"  : Register.SP,
-        "FP"  : Register.FP
+        "FP"  : Register.FP,
+        "HP"  : Register.HP
     ];
 
     _regexps = [
-        InstrRegex(r"^\s*(?:(\w+)\s+)?(ADD|AND|CMP|DIV|MOV|MUL|OR|SUB)\s+(R\d+|FP|SP)\s*,?\s*(R\d+|SP|SL|PC|FP|SB)\s*$",AddressMode.REGISTER),
-        InstrRegex(r"^\s*(?:(\w+)\s+)?(BGT|BLT|BNZ|BRZ|LDA|LDB|LDR|RUN|STB|STR)\s+(R\d+)\s*,?\s*(\w+)\s*$",AddressMode.DIRECT),
-        InstrRegex(r"^\s*(?:(\w+)\s+)?(LDB|LDR|STB|STR)\s+(R\d+|FP)\s*,?\s*\((R\d+|SP|FP)\)\s*$",AddressMode.INDIRECT),
-        InstrRegex(r"^\s*(?:(\w+)\s+)?(ADI)\s+(R\d+|SP)\s*,?\s*(-?\d+)\s*$",AddressMode.IMMEDIATE),
+        InstrRegex(r"^\s*(?:(\w+)\s+)?(ADD|AND|CMP|DIV|MOV|MUL|OR|SUB)\s+(R\d|FP|SP|HP)\s*,?\s*(R\d|SP|SL|PC|FP|SB)\s*$",AddressMode.REGISTER),
+        InstrRegex(r"^\s*(?:(\w+)\s+)?(BGT|BLT|BNZ|BRZ|LDA|LDB|LDR|RUN|STB|STR)\s+(R\d)\s*,?\s*(\w+)\s*$",AddressMode.DIRECT),
+        InstrRegex(r"^\s*(?:(\w+)\s+)?(LDB|LDR|STB|STR)\s+(R\d|FP|HP)\s*,?\s*\((R\d|SP|FP)\)\s*$",AddressMode.INDIRECT),
+        InstrRegex(r"^\s*(?:(\w+)\s+)?(ADI)\s+(R\d|SP|HP)\s*,?\s*(-?\d+)\s*$",AddressMode.IMMEDIATE),
         InstrRegex(r"^\s*(?:(\w+)\s+)?(TRP)\s+(\d+)\s*$",AddressMode.IMMEDIATE),
         InstrRegex(r"^\s*(?:(\w+)\s+)?(\.INT)\s+(-?\d+(?:\s*,\s*-?\d+)*)\s*$",AddressMode.IMMEDIATE),
         InstrRegex(r"^\s*(?:(\w+)\s+)?(\.BYT)\s+'(.+)'\s*$",AddressMode.IMMEDIATE),
         InstrRegex(r"^\s*(?:(\w+)\s+)?(JMP|LCK|ULK)\s+(\w+)\s*$",AddressMode.IMMEDIATE),
-        InstrRegex(r"^\s*(?:(\w+)\s+)?(JMR)\s+(R\d+)\s*$",AddressMode.REGISTER),
+        InstrRegex(r"^\s*(?:(\w+)\s+)?(JMR)\s+(R\d)\s*$",AddressMode.REGISTER),
         InstrRegex(r"^\s*(?:(\w+)\s+)?(BLK|END)\s*$",AddressMode.IMMEDIATE)
     ];
 }

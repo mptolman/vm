@@ -1,1 +1,0 @@
-dmd main.d mem.d instr.d queue.d assembler.d vm.d -release -O

@@ -18,6 +18,7 @@ void execute(Memory mem, int start)
     // Start main thread
     auto currThread = allocateThread(start);
     auto reg = currThread.reg.ptr;
+    reg[Register.HP] = mem.nextFree();
 
     bool running = true;
     size_t threadOpCount = 0;
