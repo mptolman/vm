@@ -3,8 +3,8 @@ import std.stdio;
 import instr, mem, queue;
 
 immutable MEM_SIZE_IN_BYTES = 1024*1024*5; // 5 MB
-immutable THREAD_STACK_SIZE = 1024*300; // 300 KB per thread
-immutable THREAD_COUNT      = 6; // # threads (including main)
+immutable THREAD_STACK_SIZE = 1024*1024; // 1 MB per thread
+immutable THREAD_COUNT      = 1; // # threads (including main)
 immutable OPS_PER_THREAD    = 3; // # instructions b/w context switch
 
 void execute(Memory mem, int start)

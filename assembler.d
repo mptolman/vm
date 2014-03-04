@@ -298,7 +298,7 @@ static this()
     ];
 
     _regexps = [
-        InstrRegex(r"^\s*(?:(\w+)\s+)?(ADD|AND|CMP|DIV|MOV|MUL|OR|SUB)\s+(R\d|FP|SP|HP)\s*,?\s*(R\d|SP|SL|PC|FP|SB)\s*$",AddressMode.REGISTER),
+        InstrRegex(r"^\s*(?:(\w+)\s+)?(ADD|AND|CMP|DIV|MOV|MUL|OR|SUB)\s+(R\d|FP|SP|HP)\s*,?\s*(R\d|SP|SL|PC|FP|SB|HP)\s*$",AddressMode.REGISTER),
         InstrRegex(r"^\s*(?:(\w+)\s+)?(BGT|BLT|BNZ|BRZ|LDA|LDB|LDR|RUN|STB|STR)\s+(R\d)\s*,?\s*(\w+)\s*$",AddressMode.DIRECT),
         InstrRegex(r"^\s*(?:(\w+)\s+)?(LDB|LDR|STB|STR)\s+(R\d|FP|HP)\s*,?\s*\((R\d|SP|FP)\)\s*$",AddressMode.INDIRECT),
         InstrRegex(r"^\s*(?:(\w+)\s+)?(ADI)\s+(R\d|SP|HP)\s*,?\s*(-?\d+)\s*$",AddressMode.IMMEDIATE),
