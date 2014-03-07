@@ -5,11 +5,11 @@ class Memory
 {
 private:
     byte* _mem;
-    size_t _memSize;
-    size_t _nextFree;
+    int _memSize;
+    int _nextFree;
 
 public:
-    this(size_t memSize)
+    this(int memSize)
     {
         _mem = cast(byte*)std.c.stdlib.malloc(memSize);
         _memSize = memSize;
@@ -27,13 +27,13 @@ public:
         return p;
     }
 
-    auto store(T,Args...)(size_t offset, Args args)
+    auto store(T,Args...)(int offset, Args args)
     {
         assert(offset < _memSize);
         return emplace!T(cast(T*)(_mem+offset), args);
     }
 
-    auto load(T)(size_t offset) const
+    auto load(T)(int offset) const
     {
         assert(offset < _memSize);
         return cast(T*)(_mem+offset);

@@ -21,7 +21,7 @@ void execute(Memory mem, int start)
     reg[Register.HP] = mem.nextFree();
 
     bool running = true;
-    size_t threadOpCount = 0;
+    int threadOpCount = 0;
 
     while (running) {
         if (!_activeThreads.empty) {
@@ -212,10 +212,10 @@ Queue!ThreadStack _activeThreads;
 
 struct ThreadStack
 {
-    size_t tid;
+    int tid;
     int[Register.COUNT] reg;
 
-    this(size_t tid) {
+    this(int tid) {
         this.tid = tid;
         reg[Register.SB] = MEM_SIZE_IN_BYTES - (tid * THREAD_STACK_SIZE) - 1;
         reg[Register.SL] = reg[Register.SB] - THREAD_STACK_SIZE + 1;
