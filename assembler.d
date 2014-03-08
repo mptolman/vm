@@ -12,9 +12,9 @@ int assemble(File file, Memory mem)
     void continueAssemble(bool firstPass)
     {
         char[] buf;
-        size_t memOffset;
+        int memOffset;
 
-        for(size_t lineNum=1; file.readln(buf); ++lineNum) {
+        for(int lineNum=1; file.readln(buf); ++lineNum) {
             auto line = strip(truncate(buf, ';')); // strip comments
             if (!line.length) continue; // ignore empty lines
 
@@ -140,7 +140,7 @@ int assemble(File file, Memory mem)
 
 class AssemblerException : Exception
 {
-    this(Args...)(size_t line, Args args) { super(text("(",line,") ",args)); }
+    this(Args...)(int line, Args args) { super(text("(",line,") ",args)); }
 }
 
 /**************************
@@ -150,7 +150,7 @@ private:
 immutable Opcode[string] _opcodeMap;
 immutable Register[string] _regMap;
 immutable InstrRegex[] _regexps;
-size_t[string] _labelMap;
+int[string] _labelMap;
 
 auto truncate(T,U)(T buf, U delim)
 {
@@ -201,7 +201,7 @@ auto tokenize(string s)
     foreach(r; _regexps) {
         auto m = match(s, r.regex);
         if (m.empty) continue;
-        for (size_t i = 1; i < m.captures.length; ++i) {
+        for (int i = 1; i < m.captures.length; ++i) {
             final switch(i) {
             case 1:
                 label = m.captures[i];
