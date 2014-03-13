@@ -16,6 +16,7 @@ enum TType : byte
     INT_DIRECTIVE,
     INT_LITERAL,
     BYT_DIRECTIVE,
+    BYT_DELIM,
     BYT_LITERAL,
     EOF,
     UNKNOWN
@@ -33,145 +34,164 @@ class Lexer
 public:
     this(string fileName)
     {
-        file   = new BufferedFile(fileName);
-        tokens = new Queue!Token;
+        _file   = new BufferedFile(fileName);
+        _tokens = new Queue!Token;
     }
 
-    auto next()
+    Token peek()
     {
-        if (tokens.empty)
-            loadMoreTokens();
+        if (!_tokens.empty)
+            return _tokens.front;
 
-        auto t = tokens.front;
-        tokens.pop();
-        return t;
+        loadMoreTokens();
+        return peek();
     }
 
-    auto peek()
+    Token next()
     {
-        if (tokens.empty)
-            loadMoreTokens();
+        if (!_tokens.empty) {
+            auto t = _tokens.front;
+            _tokens.pop();
+            return t;
+        }
 
-        return tokens.front;
+        loadMoreTokens();
+        return next();
     }
+
+    void rewind()
+    {
+        _file.seek(0, SeekPos.Set);
+        _tokens.clear();
+        _lineNum = 0;
+    }
+
 private:
-    Queue!Token tokens;
-    Stream file;
+    Stream _file;
+    Queue!Token _tokens;
 
-    char[] currentLine;
-    size_t currentLineNum;
-    size_t currentPos;
+    string _line;
+    string _lexeme;
+    size_t _pos;
+    size_t _lineNum;
 
     static immutable TType[string] tokMap;
-    static immutable BUFFER_SIZE = 500;
 
     void loadMoreTokens()
     {
         static char[] buffer;
 
-        while (!file.eof) {
-            currentLine = file.readLine(buffer);            
-            ++currentLineNum;
-
-            for (currentPos=0; currentPos < currentLine.length; ++currentPos) {
-                auto c = currentLine[currentPos];
-
-                if (isWhite(c)) {
-                    // ignore whitespace
-                }
-                else if (isAlpha(c)) {
-                    alpha();
-                }
-                else if (c == '.') {
-                    directive();
-                }
-                else if (isDigit(c) || c == '-') {
-                    int_literal();
-                }
-                else if (c == '\'') {
-                    byt_literal();
-                }
-                else if (c == ',') {
-                    tokens.push(Token(TType.COMMA, to!string(c), currentLineNum));
-                }
-                else if (c == '(') {
-                    tokens.push(Token(TType.OPAREN, to!string(c), currentLineNum));
-                }
-                else if (c == ')') {
-                    tokens.push(Token(TType.CPAREN, to!string(c), currentLineNum));
-                }
-                else if (c == ';') {
-                    break;
-                }
-                else {
-                    tokens.push(Token(TType.UNKNOWN, to!string(c), currentLineNum));
-                }
-            }
-
-            //if (tokens.size >= BUFFER_SIZE)
-            //  break;
+        if (_file.eof) {
+            _tokens.push(Token(TType.EOF, null, _lineNum));
+            return;
         }
 
-        if (file.eof)
-            tokens.push(Token(TType.EOF, null, currentLineNum));
+        _line = to!string(_file.readLine(buffer));
+        _line ~= '\n';
+        ++_lineNum;
+
+        for (_pos = 0; _pos < _line.length;) {
+            char c  = _line[_pos];
+            _lexeme = [c];
+
+            if (isWhite(c)) {
+                ++_pos;
+            }
+            else if (isAlpha(c)) {
+                alpha();
+            }
+            else if (c == '.') {
+                directive();
+            }
+            else if (isDigit(c)) {
+                int_literal();
+            }
+            else if (c == '\'') {
+                byt_literal();
+            }
+            else if (c == '-') {
+                minus();
+            }
+            else if (c == ',') {
+                ++_pos;
+                _tokens.push(Token(TType.COMMA, _lexeme, _lineNum));
+            }
+            else if (c == '(') {
+                ++_pos;
+                _tokens.push(Token(TType.OPAREN, _lexeme, _lineNum));
+            }
+            else if (c == ')') {
+                ++_pos;
+                _tokens.push(Token(TType.CPAREN, _lexeme, _lineNum));
+            }
+            else if (c == ';') {
+                break;
+            }
+            else {
+                ++_pos;
+                _tokens.push(Token(TType.UNKNOWN, _lexeme, _lineNum));
+            }
+        }
     }
 
     auto collectWhile(bool function(char c) f)
     {
         string tok;
-
-        while (currentPos < currentLine.length) {
-            if (f(currentLine[currentPos])) {
-                tok ~= currentLine[currentPos++];
-            }
-            else {
-                --currentPos;
+        while (_pos < _line.length) {
+            if (f(_line[_pos]))
+                tok ~= _line[_pos++];
+            else
                 break;
-            }
         }
-
         return tok;
     }
 
     void alpha()
     {
-        string tok = [currentLine[currentPos++]];
-        tok ~= collectWhile(c => isAlphaNum(c) || c == '_');
-        tokens.push(Token(tok in tokMap ? tokMap[tok] : TType.LABEL, tok, currentLineNum));
+        ++_pos;
+        _lexeme ~= collectWhile(c => isAlphaNum(c) || c == '_');
+        _tokens.push(Token(_lexeme in tokMap ? tokMap[_lexeme] : TType.LABEL, _lexeme, _lineNum));
     }
 
     void directive()
     {
-        string tok = [currentLine[currentPos++]];
-        tok ~= collectWhile(c => isAlpha(c));
-        if (tok == ".BYT")
-            tokens.push(Token(TType.BYT_DIRECTIVE, tok, currentLineNum));
-        else if (tok == ".INT")
-            tokens.push(Token(TType.INT_DIRECTIVE, tok, currentLineNum));
+        ++_pos;
+        _lexeme ~= collectWhile(c => isAlpha(c));
+        if (_lexeme == ".BYT")
+            _tokens.push(Token(TType.BYT_DIRECTIVE, _lexeme, _lineNum));
+        else if (_lexeme == ".INT")
+            _tokens.push(Token(TType.INT_DIRECTIVE, _lexeme, _lineNum));
         else
-            tokens.push(Token(TType.UNKNOWN, tok, currentLineNum));
+            _tokens.push(Token(TType.UNKNOWN, _lexeme, _lineNum));
     }
 
     void int_literal()
     {
-        string tok = [currentLine[currentPos++]];
-        tok ~= collectWhile(c => isDigit(c));
-        if (tok[0] == '-' && tok.length <= 1)
-            tokens.push(Token(TType.UNKNOWN, tok, currentLineNum));
-        else
-            tokens.push(Token(TType.INT_LITERAL, tok, currentLineNum));
+        ++_pos;
+        _lexeme ~= collectWhile(c => isDigit(c));
+        _tokens.push(Token(TType.INT_LITERAL, _lexeme, _lineNum));
     }
 
     void byt_literal()
     {
-        ++currentPos;
-        string tok = collectWhile(c => c != '\'');
-        if (currentLine[currentPos+1] == '\'') {
-            ++currentPos;
-            tokens.push(Token(TType.BYT_LITERAL, tok, currentLineNum));
+        ++_pos;
+        _tokens.push(Token(TType.BYT_DELIM, _lexeme, _lineNum));
+        _lexeme = collectWhile(c => c != '\'');
+        if (_lexeme.length)
+            _tokens.push(Token(TType.BYT_LITERAL, _lexeme, _lineNum));
+        if (_pos < _line.length)
+            _tokens.push(Token(TType.BYT_DELIM, [_line[_pos]], _lineNum));
+    }
+
+    void minus()
+    {
+        if (isDigit(_line[_pos+1])) {
+            int_literal();
         }
-        else
-            tokens.push(Token(TType.UNKNOWN, tok, currentLineNum));
+        else {
+            ++_pos;
+            _tokens.push(Token(TType.UNKNOWN, _lexeme, _lineNum));
+        }
     }
 
     static this()
@@ -192,8 +212,8 @@ void main()
 
     Lexer lex = new Lexer(r"asm\proj2.asm");
     Token t;
-    while (t.type != TType.EOF) {
+    do {
         t = lex.next();
         tokens.writeln(t);
-    }
+    } while (t.type != TType.EOF);
 }
