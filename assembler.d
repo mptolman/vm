@@ -28,11 +28,11 @@ private:
 Lexer _lexer;
 Memory _mem;
 Token _ct;
-size_t _offset;
+uint _offset;
 int _start;
 bool _firstPass;
 
-size_t[string] _labelMap;
+uint[string] _labelMap;
 static immutable Register[string] _regMap;
 static immutable Opcode[string] _opcodeMap;
 
