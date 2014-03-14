@@ -52,18 +52,3 @@ struct Instruction
     int opd1;   
     int opd2;
 }
-
-struct TokenizedInstr
-{
-    AddressMode addrMode;
-    string label;
-    string opcode;
-    string opd1;
-    string opd2;
-}
-
-struct InstrRegex
-{
-    string regex;
-    AddressMode addrMode;
-}
