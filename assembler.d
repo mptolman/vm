@@ -6,6 +6,7 @@ auto assemble(string fileName, Memory mem)
     _start = -1;
     _mem   = mem;
     _lexer = new Lexer(fileName);
+    _labelMap.clear();
 
     _firstPass = true;
     continueAssemble();
