@@ -9,10 +9,9 @@ int main(string[] args)
     }
 
     try {
-        File file = File(args[1]);
         Memory mem = new Memory(vm.MEM_SIZE_IN_BYTES);
 
-        auto start = assemble(file, mem);
+        auto start = assemble(args[1], mem);
         execute(mem, start);
     }
     catch (Exception e) {

@@ -11,9 +11,8 @@ enum TType : byte
     OPAREN,
     CPAREN,
     COMMA,
-    INT_DIRECTIVE,
+    DIRECTIVE,
     INT_LITERAL,
-    BYT_DIRECTIVE,
     BYT_DELIM,
     BYT_LITERAL,
     EOF,
@@ -132,14 +131,13 @@ private:
     {
         string tok;
 
-        foreach (c; _line[_pos..$]) {
-            if (f(c))
-                tok ~= c;
-            else 
+        for (; _pos < _line.length; ++_pos) {
+            if (f(_line[_pos]))
+                tok ~= _line[_pos];
+            else
                 break;
         }
 
-        _pos += tok.length;
         return tok;
     }
 
@@ -166,9 +164,9 @@ private:
         _tokens.push(Token(TType.BYT_DELIM, _lexeme, _lineNum));
         _lexeme = collectWhile(c => c != '\'');
         if (_lexeme.length)
-            _tokens.push(Token(TType.BYT_LITERAL, _lexeme, _lineNum));
+            _tokens.push(Token(TType.BYT_LITERAL, replaceEscapeChars(_lexeme), _lineNum));
         if (_pos < _line.length)
-            _tokens.push(Token(TType.BYT_DELIM, [_line[_pos]], _lineNum));
+            _tokens.push(Token(TType.BYT_DELIM, [_line[_pos++]], _lineNum));
     }
 
     void minus()
@@ -182,8 +180,8 @@ private:
     static this()
     {
         tokMap = [
-            ".INT" : TType.INT_DIRECTIVE,
-            ".BYT" : TType.BYT_DIRECTIVE,
+            ".INT" : TType.DIRECTIVE,
+            ".BYT" : TType.DIRECTIVE,
             "R0"   : TType.REGISTER,
             "R1"   : TType.REGISTER,
             "R2"   : TType.REGISTER,
@@ -205,6 +203,7 @@ private:
             "AND"  : TType.OPCODE,
             "BGT"  : TType.OPCODE,
             "BLK"  : TType.OPCODE,
+            "BLT"  : TType.OPCODE,
             "BNZ"  : TType.OPCODE,
             "BRZ"  : TType.OPCODE,
             "CMP"  : TType.OPCODE,
@@ -229,13 +228,30 @@ private:
     }
 }
 
-//void main()
-//{
-//    auto file = std.stdio.File(r"C:\tokens.txt", "w");
-//    Lexer lex = new Lexer(r"asm\proj3.asm");
-//    Token t = lex.next();
-//    do {
-//        file.writeln(t);
-//        t = lex.next();
-//    } while (t.type != TType.EOF);
-//}
+auto replaceEscapeChars(string s)
+{
+    string result;
+    bool escape;
+
+    foreach (c; s) {
+        if (escape) {
+            if (c == '0')
+                result ~= '\0';
+            else if (c == '\\')
+                result ~= '\\';
+            else if (c == 't')
+                result ~= '\t';
+            else if (c == 'n')
+                result ~= '\n';
+            escape = false;
+            continue;
+        }
+        if (c == '\\') {
+            escape = true;
+            continue;
+        }
+        result ~= c;
+    }
+
+    return result;
+}

@@ -1,1 +1,1 @@
-dmd main.d mem.d instr.d queue.d assembler.d vm.d -debug
+dmd -debug main.d mem.d instr.d queue.d lexer.d assembler.d vm.d
